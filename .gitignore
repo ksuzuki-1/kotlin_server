@@ -1,0 +1,25 @@
+# Gradle and Kotlin build output
+.gradle/
+build/
+out/
+.kotlin/
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Local environment and machine-specific configuration
+.env
+.env.*
+!.env.example
+application-local.yaml
+application-local.yml
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# JVM crash logs
+hs_err_pid*
