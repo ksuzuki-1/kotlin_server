@@ -3,11 +3,13 @@ package com.ksuzuki
 import io.ktor.http.ContentType
 import io.ktor.server.application.*
 import io.ktor.server.http.content.staticResources
-import io.ktor.server.request.uri
+import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
+    install(CallLogging)
+
     routing {
         get("/") {
             call.respondText("Hello, World!")

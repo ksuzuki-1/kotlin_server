@@ -15,6 +15,7 @@ kotlin {
 }
 dependencies {
     implementation(ktorLibs.server.config.yaml)
+    implementation("io.ktor:ktor-server-call-logging:3.5.0")
     implementation(ktorLibs.server.core)
     implementation(ktorLibs.server.netty)
     implementation(libs.logback.classic)
