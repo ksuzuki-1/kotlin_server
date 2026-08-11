@@ -1,5 +1,8 @@
 package com.ksuzuki.model.task
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class Priority {
     LOW,
     MEDIUM,
@@ -7,6 +10,7 @@ enum class Priority {
     VITAL
 }
 
+@Serializable
 data class Task(
     val name: String,
     val description: String,

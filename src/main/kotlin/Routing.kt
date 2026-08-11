@@ -10,13 +10,16 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.request.receive
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import kotlinx.serialization.SerializationException
 
 fun Application.configureRouting() {
     install(CallLogging)
@@ -43,7 +46,7 @@ fun Application.configureRouting() {
                     }.getOrElse {
                         call.respondText(
                             text = "Invalid priority: $priorityParam",
-                            status = HttpStatusCode.BadRequest
+                            status = HttpStatusCode.NotFound
                         )
                         return@get
                     }
@@ -51,39 +54,32 @@ fun Application.configureRouting() {
                 } else {
                     TaskRepository.allTasks()
                 }
-                call.respondText(
-                    contentType = ContentType.parse("text/html"),
-                    text = tasks.tasksAsTable()
-                )
+                call.respond(tasks)
             }
 
             post {
-                val formContent = call.receiveParameters()
-                val params = Triple(
-                    formContent["name"] ?: "",
-                    formContent["description"] ?: "",
-                    formContent["priority"] ?: ""
-                )
-
-                if (params.toList().any { it.isEmpty() }) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@post
-                }
 
                 try {
-                    val priority = Priority.valueOf(params.third.uppercase())
-                    TaskRepository.addTask(
-                        Task(
-                            params.first,
-                            params.second,
-                            priority
-                        )
-                    )
-
-                    call.respond(HttpStatusCode.NoContent)
-                } catch (e: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest)
+                    val task = call.receive<Task>()
+                    TaskRepository.addTask(task)
+                    call.respond(HttpStatusCode.Created)
                 } catch (e: IllegalStateException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                } catch (e: SerializationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            }
+
+            delete("/{taskName}") {
+                val taskName = call.parameters["taskName"]
+                if (taskName == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@delete
+                }
+
+                if (TaskRepository.removeTask(taskName)) {
+                    call.respond(HttpStatusCode.NoContent)
+                } else {
                     call.respond(HttpStatusCode.BadRequest)
                 }
             }
@@ -93,5 +89,7 @@ fun Application.configureRouting() {
         staticResources("/task-ui", "task-ui")
 
         staticResources("/content", "mycontent")
+
+        staticResources("/static", "static")
     }
 }

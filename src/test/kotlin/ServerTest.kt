@@ -1,5 +1,8 @@
 package com.ksuzuki
 
+import com.ksuzuki.model.task.Priority
+import com.ksuzuki.model.task.Task
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -9,11 +12,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.http.formUrlEncode
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.testing.testApplication
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ServerTest {
 
@@ -68,34 +73,66 @@ class ServerTest {
 
         val response = client.get("/tasks?priority=urgent")
 
-        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals(HttpStatusCode.NotFound, response.status)
         assertEquals("Invalid priority: urgent", response.bodyAsText())
+    }
+
+    @Test
+    fun `tasks can be requested as JSON`() = testApplication {
+        configure()
+
+        val response = client.get("/tasks") {
+            header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Application.Json, response.contentType())
+    }
+
+    @Test
+    fun tasksCanBeFoundByPriority() = testApplication {
+        configure()
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = client.get("/tasks?priority=medium")
+        val result = response.body<List<Task>>().firstOrNull()
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertNotNull(result)
+        assertEquals(Priority.MEDIUM, result.priority)
     }
 
     @Test
     fun newTasksCanBeAdded() = testApplication {
         configure()
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
 
+        val task = Task("swimming", "Go to the beach", Priority.LOW)
         val response1 = client.post("/tasks") {
             header(
                 HttpHeaders.ContentType,
-                ContentType.Application.FormUrlEncoded.toString()
+                ContentType.Application.Json
             )
-            setBody(
-                listOf(
-                    "name" to "swimming",
-                    "description" to "Go to the beach",
-                    "priority" to "Low"
-                ).formUrlEncode()
-            )
+
+            setBody(task)
         }
-        assertEquals(HttpStatusCode.NoContent, response1.status)
+        assertEquals(HttpStatusCode.Created, response1.status)
 
         val response2 = client.get("/tasks")
         assertEquals(HttpStatusCode.OK, response2.status)
-        val body = response2.bodyAsText()
 
-        assertContains(body, "swimming")
-        assertContains(body, "Go to the beach")
+        val taskNames = response2
+            .body<List<Task>>()
+            .map { it.name }
+
+        assertContains(taskNames, "swimming")
     }
 }
