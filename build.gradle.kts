@@ -22,6 +22,15 @@ dependencies {
     implementation(ktorLibs.server.contentNegotiation)
     implementation(ktorLibs.server.thymeleaf)
     implementation(ktorLibs.server.websockets)
+    implementation(ktorLibs.server.statusPages)
+    implementation(ktorLibs.server.di)
+
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.dao)
+    implementation(libs.h2)
+    implementation(libs.h2database.r2dbc)
+    implementation(libs.postgresql)
 
     implementation(ktorLibs.serialization.kotlinx.json)
 
