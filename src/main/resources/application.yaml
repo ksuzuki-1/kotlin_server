@@ -6,3 +6,4 @@ ktor:
       - com.ksuzuki.RoutingKt.configureRouting
       - com.ksuzuki.SerializationKt.configureSerialization
       - com.ksuzuki.ThymeleafKt.configureThymeleaf
+      - com.ksuzuki.WebsocketsKt.configureWebsockets

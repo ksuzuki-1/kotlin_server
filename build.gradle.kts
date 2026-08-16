@@ -21,6 +21,7 @@ dependencies {
     implementation(ktorLibs.server.netty)
     implementation(ktorLibs.server.contentNegotiation)
     implementation(ktorLibs.server.thymeleaf)
+    implementation(ktorLibs.server.websockets)
 
     implementation(ktorLibs.serialization.kotlinx.json)
 
