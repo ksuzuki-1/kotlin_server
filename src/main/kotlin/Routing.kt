@@ -20,7 +20,13 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.thymeleaf.ThymeleafContent
+import io.ktor.server.websocket.sendSerialized
+import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.close
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerializationException
+import kotlin.time.Duration.Companion.milliseconds
 
 fun Application.configureRouting() {
     install(CallLogging)
@@ -138,6 +144,23 @@ fun Application.configureRouting() {
             }
         }
 
+        webSocket("/socketTasks") {
+            val tasks = listOf(
+                Task("cleaning", "Clean the house", Priority.LOW),
+                Task("gardening", "Mow the lawn", Priority.MEDIUM),
+                Task("shopping", "Buy the groceries", Priority.HIGH),
+                Task("painting", "Paint the fence", Priority.MEDIUM)
+            )
+
+            for (task in tasks) {
+                sendSerialized(task)
+                delay(1000.milliseconds)
+            }
+
+            close(CloseReason(CloseReason.Codes.NORMAL, "All done"))
+        }
+
+        staticResources("/websocket", "websocket")
 
         staticResources("/task-ui", "task-ui")
 
