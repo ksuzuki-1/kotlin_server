@@ -3,5 +3,6 @@ ktor:
     port: 8080
   application:
     modules:
-      - com.ksuzuki.SerializationKt.configureSerialization
       - com.ksuzuki.RoutingKt.configureRouting
+      - com.ksuzuki.SerializationKt.configureSerialization
+      - com.ksuzuki.ThymeleafKt.configureThymeleaf

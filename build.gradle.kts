@@ -20,11 +20,13 @@ dependencies {
     implementation(ktorLibs.server.core)
     implementation(ktorLibs.server.netty)
     implementation(ktorLibs.server.contentNegotiation)
+    implementation(ktorLibs.server.thymeleaf)
+
     implementation(ktorLibs.serialization.kotlinx.json)
+
+    implementation(libs.logback.classic)
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
     testImplementation(ktorLibs.client.contentNegotiation)
-
-    implementation(libs.logback.classic)
 }
